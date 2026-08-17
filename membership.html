@@ -1038,30 +1038,7 @@ function buildPdf(d){
     doc.addImage(photoDataUrl, 'JPEG', photoX, photoY, photoW, photoH);
   }
 
-  const rows = [
-    ['SR No', d.srno], ['Name', d.name],
-    ['Date of Birth', isoToDMY(d.dob)], ['Date of Joining Bank', isoToDMY(d.doj)], ['Date of Retirement', isoToDMY(d.dor)],
-    ['Pension Branch', d.pensionBranch || '-'], ['Pension Account No', d.pensionAcNo || '-'],
-    ['Address', [d.addr1,d.addr2,d.addr3].filter(Boolean).join(', ')],
-    ['District', d.district || '-'], ['Vill/Town/City', d.village], ['State', d.state], ['PIN Code', d.pin],
-    ['Mobile 1', d.mobile1], ['Mobile 2', d.mobile2 || '-'], ['Email', d.email || '-'],
-    ['Spouse Name', d.spouseName || '-']
-  ];
-
-  doc.autoTable({
-    startY: y,
-    margin: { left: marginX, right: marginX + photoW + 4 },
-    body: rows,
-    styles: { fontSize: 9.5, cellPadding: 1.6, textColor: [30,30,30] },
-    columnStyles: { 0: { fontStyle:'bold', cellWidth: 42, textColor:[60,60,60] }, 1: { cellWidth:'auto' } },
-    theme: 'plain'
-  });
-
-  y = Math.max(doc.lastAutoTable.finalY, photoY + photoH) + 6;
-  doc.setDrawColor(26,115,232); doc.setLineWidth(0.4);
-  doc.line(marginX, y, pageWidth-marginX, y);
-  y += 8;
-
+  // --- Letter (top) ---
   doc.setFont(undefined,'normal'); doc.setFontSize(10.5); doc.setTextColor(20,20,20);
   const leftLines = [
     'To', 'The General Secretary', "Indian Bank Retirees' Association",
@@ -1071,10 +1048,11 @@ function buildPdf(d){
   y += 4;
   doc.text('Dear Comrade,', marginX, y); y += 7;
 
-  const bodyText = "The above is my data. Please enrol me as member of the Retirees' Association. I have read the Bye-laws and rules of the "+
+  const bodyText = "Please enrol me as member of the Retirees' Association. I have read the Bye-laws and rules of the "+
     "Association and I am willing to abide by them. I am remitting a sum of Rs.1000/- (Rupees One Thousand only) "+
     "towards one time admission fee and Life Membership. Amount Credited to SB Account No 465693063 with Indian Bank, "+
-    "Himayatnagar Branch / Demand Draft / Cheque favouring Indian Bank Retirees' Association, AP & TS is enclosed.";
+    "Himayatnagar Branch / Demand Draft / Cheque favouring Indian Bank Retirees' Association, AP & TS is enclosed. "+
+    "My data is given below.";
   const wrapped = doc.splitTextToSize(bodyText, usableWidth);
   doc.text(wrapped, marginX, y);
   y += wrapped.length * 5.2 + 10;
@@ -1091,6 +1069,32 @@ function buildPdf(d){
   }
   doc.setFont(undefined,'bold'); doc.setFontSize(10);
   doc.text('(' + (d.name || 'Signature') + ')', marginX, y);
+  y += 8;
+
+  y = Math.max(y, photoY + photoH) + 4;
+  doc.setDrawColor(26,115,232); doc.setLineWidth(0.4);
+  doc.line(marginX, y, pageWidth-marginX, y);
+  y += 8;
+
+  // --- Data (bottom) ---
+  const rows = [
+    ['SR No', d.srno], ['Name', d.name],
+    ['Date of Birth', isoToDMY(d.dob)], ['Date of Joining Bank', isoToDMY(d.doj)], ['Date of Retirement', isoToDMY(d.dor)],
+    ['Pension Branch', d.pensionBranch || '-'], ['Pension Account No', d.pensionAcNo || '-'],
+    ['Address', [d.addr1,d.addr2,d.addr3].filter(Boolean).join(', ')],
+    ['District', d.district || '-'], ['Vill/Town/City', d.village], ['State', d.state], ['PIN Code', d.pin],
+    ['Mobile 1', d.mobile1], ['Mobile 2', d.mobile2 || '-'], ['Email', d.email || '-'],
+    ['Spouse Name', d.spouseName || '-']
+  ];
+
+  doc.autoTable({
+    startY: y,
+    margin: { left: marginX, right: marginX },
+    body: rows,
+    styles: { fontSize: 9.5, cellPadding: 1.6, textColor: [30,30,30] },
+    columnStyles: { 0: { fontStyle:'bold', cellWidth: 42, textColor:[60,60,60] }, 1: { cellWidth:'auto' } },
+    theme: 'plain'
+  });
 
   return doc.output('blob');
 }
